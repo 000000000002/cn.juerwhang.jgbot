@@ -3,7 +3,9 @@ package cn.juerwhang.jgbot.modules
 import cc.moecraft.icq.PicqBotX
 import cc.moecraft.icq.command.CommandProperties
 import cc.moecraft.icq.command.interfaces.*
+import cc.moecraft.icq.event.EventHandler
 import cc.moecraft.icq.event.IcqListener
+import cc.moecraft.icq.event.events.local.EventLocalException
 import cc.moecraft.icq.event.events.message.EventDiscussMessage
 import cc.moecraft.icq.event.events.message.EventGroupMessage
 import cc.moecraft.icq.event.events.message.EventMessage
@@ -12,22 +14,8 @@ import cc.moecraft.icq.user.Group
 import cc.moecraft.icq.user.GroupUser
 import cc.moecraft.icq.user.User
 import cn.juerwhang.jgbot.bot
-import cn.juerwhang.jgbot.modules.basic.BasicModule
 import java.util.*
 
-
-/**
- * 当前版本号
- */
-const val CURRENT_VERSION = "alpha.1.0"
-
-/**
- * 待注册模块，用于手动添加需要注册的模块。
- * Tips: 本来打算使用扫描器扫描包并自动加载，但是仔细想想，这样效率挺低的。也许之后会这么做，目前先一切从简吧。 -- JuerWhang 2019/11/07
- */
-private val registerModules = arrayOf<CqModule>(
-    BasicModule
-)
 
 /**
  * 向机器人中注册各个模块
@@ -41,22 +29,33 @@ fun PicqBotX.registerModules() {
 open class CqModule(
     private val enabled: Boolean,
     private val name: String = "",
-    private val summary: String = ""
+    private val summary: String = "",
+    private val registerSelf: Boolean = false
 ): IcqListener() {
     private val commandList = LinkedList<FunctionalCommand>()
-    private val logger = bot.loggerInstanceManager.getLoggerInstance("CqModule", true)
+    val logger = bot.loggerInstanceManager.getLoggerInstance("模块: %s".format(name), true)
 
-    fun register(bot: PicqBotX, registerSelf: Boolean = false) {
-        logger.log(">> 正在注册模块：%s (Enabled: %s)".format(name, enabled.toString()))
+    fun register(bot: PicqBotX) {
+        logger.log(">> 正在注册模块 ( Enabled: %s )".format(enabled.toString()))
         logger.log(">> 模块信息：%s".format(summary))
         if (enabled) {
             if (registerSelf) {
                 bot.eventManager.registerListener(this)
             }
-            bot.commandManager.registerCommands(*commandList.toTypedArray())
+            for (command in commandList.toTypedArray()) {
+                logger.log(
+                    ">> 注册命令 [ %s ( %s ) ] -> %s".format(
+                        command.properties().name,
+                        command.properties().alias.joinToString(),
+                        command.type
+                    )
+                )
+                bot.commandManager.registerCommand(command)
+            }
         } else {
-            logger.log(">> 模块 [%s] 未启用，抛弃。".format(name))
+            logger.log(">> 模块未启用，抛弃。")
         }
+        logger.log(">> ======== 模块注册完毕 ======== <<")
     }
 
     private fun addCommand(command: FunctionalCommand): CqModule {
@@ -82,6 +81,7 @@ open class CqModule(
 }
 
 open class FunctionalCommand(
+    val type: String,
     private val name: String,
     private vararg val alias: String
 ): IcqCommand {
@@ -102,7 +102,7 @@ class FunctionalGroupCommand(
     name: String,
     vararg alias: String,
     val block: GroupCommandCallback
-): FunctionalCommand(name, *alias), GroupCommand {
+): FunctionalCommand("GroupCommand", name, *alias), GroupCommand {
     override fun groupMessage(
         event: EventGroupMessage?,
         sender: GroupUser?,
@@ -125,7 +125,7 @@ class FunctionalPrivateCommand(
     name: String,
     vararg alias: String,
     val block: PrivateCommandCallback
-): FunctionalCommand(name, *alias), PrivateCommand {
+): FunctionalCommand("PrivateCommand", name, *alias), PrivateCommand {
     override fun privateMessage(
         event: EventPrivateMessage?,
         sender: User?,
@@ -148,7 +148,7 @@ class FunctionalDiscussCommand(
     name: String,
     vararg alias: String,
     val block: DiscussCommandCallback
-): FunctionalCommand(name, *alias), DiscussCommand {
+): FunctionalCommand("DiscussCommand", name, *alias), DiscussCommand {
     override fun discussMessage(
         event: EventDiscussMessage?,
         sender: GroupUser?,
@@ -171,7 +171,7 @@ class FunctionalEverywhereCommand(
     name: String,
     vararg alias: String,
     val block: EverywhereCommandCallback
-): FunctionalCommand(name, *alias), EverywhereCommand {
+): FunctionalCommand("EverywhereCommand", name, *alias), EverywhereCommand {
     override fun run(
         event: EventMessage?,
         sender: User?,
@@ -179,5 +179,12 @@ class FunctionalEverywhereCommand(
         args: ArrayList<String>?
     ): String {
         return block(event!!, sender!!, command!!, args?: ArrayList())
+    }
+}
+
+object ErrorHandlerModule: CqModule(true, "错误处理模块", "该模块用于输出异常至日志。", true) {
+    @EventHandler
+    fun errorHandlerFunction(event: EventLocalException) {
+        event.exception.printStackTrace()
     }
 }
