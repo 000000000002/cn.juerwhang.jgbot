@@ -64,23 +64,24 @@ open class CqModule(
     }
 
     fun addPrivateCommand(name: String, vararg alias: String, block: PrivateCommandCallback): CqModule {
-        return addCommand(FunctionalPrivateCommand(name, *alias, block = block))
+        return addCommand(FunctionalPrivateCommand(this, name, *alias, block = block))
     }
 
     fun addGroupCommand(name: String, vararg alias: String, block: GroupCommandCallback): CqModule {
-        return addCommand(FunctionalGroupCommand(name, *alias, block = block))
+        return addCommand(FunctionalGroupCommand(this, name, *alias, block = block))
     }
 
     fun addDiscussCommand(name: String, vararg alias: String, block: DiscussCommandCallback): CqModule {
-        return addCommand(FunctionalDiscussCommand(name, *alias, block = block))
+        return addCommand(FunctionalDiscussCommand(this, name, *alias, block = block))
     }
 
     fun addEverywhereCommand(name: String, vararg alias: String, block: EverywhereCommandCallback): CqModule {
-        return addCommand(FunctionalEverywhereCommand(name, *alias, block = block))
+        return addCommand(FunctionalEverywhereCommand(this, name, *alias, block = block))
     }
 }
 
 open class FunctionalCommand(
+    val parentModule: CqModule,
     val type: String,
     private val name: String,
     private vararg val alias: String
@@ -99,10 +100,11 @@ typealias GroupCommandCallback = (
 ) -> String
 
 class FunctionalGroupCommand(
+    parentModule: CqModule,
     name: String,
     vararg alias: String,
     val block: GroupCommandCallback
-): FunctionalCommand("GroupCommand", name, *alias), GroupCommand {
+): FunctionalCommand(parentModule, "GroupCommand", name, *alias), GroupCommand {
     override fun groupMessage(
         event: EventGroupMessage?,
         sender: GroupUser?,
@@ -122,10 +124,11 @@ typealias PrivateCommandCallback = (
 ) -> String
 
 class FunctionalPrivateCommand(
+    parentModule: CqModule,
     name: String,
     vararg alias: String,
     val block: PrivateCommandCallback
-): FunctionalCommand("PrivateCommand", name, *alias), PrivateCommand {
+): FunctionalCommand(parentModule, "PrivateCommand", name, *alias), PrivateCommand {
     override fun privateMessage(
         event: EventPrivateMessage?,
         sender: User?,
@@ -145,10 +148,11 @@ typealias DiscussCommandCallback = (
 ) -> String
 
 class FunctionalDiscussCommand(
+    parentModule: CqModule,
     name: String,
     vararg alias: String,
     val block: DiscussCommandCallback
-): FunctionalCommand("DiscussCommand", name, *alias), DiscussCommand {
+): FunctionalCommand(parentModule, "DiscussCommand", name, *alias), DiscussCommand {
     override fun discussMessage(
         event: EventDiscussMessage?,
         sender: GroupUser?,
@@ -168,16 +172,18 @@ typealias EverywhereCommandCallback = (
 ) -> String
 
 class FunctionalEverywhereCommand(
+    parentModule: CqModule,
     name: String,
     vararg alias: String,
     val block: EverywhereCommandCallback
-): FunctionalCommand("EverywhereCommand", name, *alias), EverywhereCommand {
+): FunctionalCommand(parentModule, "EverywhereCommand", name, *alias), EverywhereCommand {
     override fun run(
         event: EventMessage?,
         sender: User?,
         command: String?,
         args: ArrayList<String>?
     ): String {
+        parentModule.logger.log("处理来自于 %d 的命令: %s (%s)".format(sender?.id, command, (args?: emptyArray()).toArray().joinToString()))
         return block(event!!, sender!!, command!!, args?: ArrayList())
     }
 }

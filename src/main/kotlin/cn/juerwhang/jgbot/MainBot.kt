@@ -26,7 +26,29 @@ data class Arguments(
     var targetPort: Int = 56100,
     var socketPort: Int = 56101,
     var prefix: Array<String> = arrayOf(">", "》")
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Arguments
+
+        if (location != other.location) return false
+        if (targetPort != other.targetPort) return false
+        if (socketPort != other.socketPort) return false
+        if (!prefix.contentEquals(other.prefix)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = location.hashCode()
+        result = 31 * result + targetPort
+        result = 31 * result + socketPort
+        result = 31 * result + prefix.contentHashCode()
+        return result
+    }
+}
 
 fun analyzeArgs(args: Array<out String>): Arguments {
     val result = Arguments()
