@@ -47,13 +47,15 @@ open class CqModule(
     private val logger = bot.loggerInstanceManager.getLoggerInstance("CqModule", true)
 
     fun register(bot: PicqBotX, registerSelf: Boolean = false) {
-        logger.log("正在注册模块：%s (Enabled: %s)".format(name, enabled.toString()))
-        logger.log("模块信息    ：%s".format(summary))
+        logger.log(">> 正在注册模块：%s (Enabled: %s)".format(name, enabled.toString()))
+        logger.log(">> 模块信息：%s".format(summary))
         if (enabled) {
             if (registerSelf) {
                 bot.eventManager.registerListener(this)
             }
             bot.commandManager.registerCommands(*commandList.toTypedArray())
+        } else {
+            logger.log(">> 模块 [%s] 未启用，抛弃。".format(name))
         }
     }
 
