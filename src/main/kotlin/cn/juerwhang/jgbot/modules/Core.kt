@@ -183,7 +183,7 @@ class FunctionalEverywhereCommand(
         command: String?,
         args: ArrayList<String>?
     ): String {
-        parentModule.logger.log("处理来自于 %d 的命令: %s (%s)".format(sender?.id, command, (args?: emptyArray()).toArray().joinToString()))
+        parentModule.logger.log("处理来自于 %d 的命令: %s (%s)".format(sender?.id, command, (args?: ArrayList()).toArray().joinToString()))
         return block(event!!, sender!!, command!!, args?: ArrayList())
     }
 }
