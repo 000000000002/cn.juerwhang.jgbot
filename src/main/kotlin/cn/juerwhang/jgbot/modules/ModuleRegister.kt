@@ -1,6 +1,7 @@
 package cn.juerwhang.jgbot.modules
 
 import cn.juerwhang.jgbot.modules.basic.BasicModule
+import cn.juerwhang.jgbot.modules.economy.BankModule
 import cn.juerwhang.jgbot.modules.other.HitokotoModule
 
 
@@ -19,5 +20,6 @@ const val CURRENT_VERSION_SUMMARY = """
 val registerModules = arrayOf(
     ErrorHandlerModule,
     BasicModule,
-    HitokotoModule
+    HitokotoModule,
+    BankModule
 )

@@ -15,6 +15,7 @@ import cc.moecraft.icq.user.GroupUser
 import cc.moecraft.icq.user.User
 import cn.juerwhang.jgbot.arguments
 import cn.juerwhang.jgbot.bot
+import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
 import java.util.*
 
 
@@ -27,6 +28,13 @@ fun PicqBotX.registerModules() {
     }
 }
 
+/**
+ * CQ模块，对原有监听器（IcqListener）以及命令（IcqCommand）的封装。
+ * @param enabled 是否启用本模块，若为false，则该模块不会被加载
+ * @param name 该模块的模块名，仅用于调试
+ * @param summary 该模块的简介，仅用于调试
+ * @param registerSelf 是否将该模块自身注册为监听器，若需要监听事件，则将该值设为true
+ */
 open class CqModule(
     private val enabled: Boolean,
     private val name: String = "",
@@ -34,13 +42,15 @@ open class CqModule(
     private val registerSelf: Boolean = false
 ): IcqListener() {
     private val commandList = LinkedList<FunctionalCommand>()
-    val logger = bot.loggerInstanceManager.getLoggerInstance("模块: %s".format(name), true)
+    val logger = bot.loggerInstanceManager.getLoggerInstance("模块: %s".format(name), true)!!
+    open val usingTable: List<BaseTable<*>> = emptyList()
 
     fun register(bot: PicqBotX) {
-        logger.log(">> 正在注册模块 ( Enabled: %s )".format(enabled.toString()))
+        logger.log(">> ======== 正在注册模块 ======== <<")
         logger.log(">> 模块信息：%s".format(summary))
         if (enabled) {
             if (registerSelf) {
+                logger.log(">> 将模块注册为事件监听器！")
                 bot.eventManager.registerListener(this)
             }
             for (command in commandList.toTypedArray()) {
@@ -52,6 +62,10 @@ open class CqModule(
                     )
                 )
                 bot.commandManager.registerCommand(command)
+            }
+            for (table in usingTable) {
+                logger.log(">> 引用表：%s".format(table.tableName))
+                table.createTable(this.logger)
             }
         } else {
             logger.log(">> 模块未启用，抛弃。")
