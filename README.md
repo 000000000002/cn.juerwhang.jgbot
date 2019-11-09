@@ -11,7 +11,7 @@
 
 ## 食用方法
 
-> 以下内容适用于版本 alpha.1.0
+> 以下内容适用于版本 alpha.1.1
 
 1. 编写一个模块，并继承 CqModule：
 ```kotlin
@@ -41,7 +41,7 @@ object BasicModule: CqModule(
 
 2. 将这个模块加入到待注册列表中，等待注册：
 ```kotlin
-// -> src/main/kotlin/cn/juerwhang/jgbot/modules/Core.kt
+// -> cn/juerwhang/jgbot/modules/ModuleRegister.kt
 
 /**
  * 待注册模块，用于手动添加需要注册的模块。

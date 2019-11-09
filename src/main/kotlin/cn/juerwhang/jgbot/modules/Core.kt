@@ -13,6 +13,7 @@ import cc.moecraft.icq.event.events.message.EventPrivateMessage
 import cc.moecraft.icq.user.Group
 import cc.moecraft.icq.user.GroupUser
 import cc.moecraft.icq.user.User
+import cn.juerwhang.jgbot.arguments
 import cn.juerwhang.jgbot.bot
 import java.util.*
 
@@ -191,6 +192,10 @@ class FunctionalEverywhereCommand(
 object ErrorHandlerModule: CqModule(true, "错误处理模块", "该模块用于输出异常至日志。", true) {
     @EventHandler
     fun errorHandlerFunction(event: EventLocalException) {
+        logger.error("发生了异常：%s".format(event.exception.message))
         event.exception.printStackTrace()
+        if (event is EventMessage && arguments.debugMode) {
+            event.respond("执行过程中发生了点儿问题，请查看日志以获取更多信息！")
+        }
     }
 }

@@ -2,6 +2,7 @@ package cn.juerwhang.jgbot.modules.other
 
 import cn.juerwhang.jgbot.modules.CqModule
 import cn.juerwhang.jgbot.utils.doGet
+import java.net.UnknownHostException
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -58,9 +59,13 @@ object HitokotoModule: CqModule(
             if (args.size > 0) {
                 params.add(Pair("c", typeNameMapper.getOrDefault(args[0], "z")))
             }
-            val hitokoto = doGet<Hitokoto>(HITOKOTO_URL, *params.toTypedArray())
-            logger.log("一言的请求结果： %s".format(hitokoto.toString()))
-            hitokoto.hitokoto
+            try {
+                val hitokoto = doGet<Hitokoto>(HITOKOTO_URL, *params.toTypedArray())
+                logger.log("一言的请求结果： %s".format(hitokoto.toString()))
+                hitokoto.hitokoto
+            } catch (e: UnknownHostException) {
+                "啊呀……抱歉，暂时没有 Hitokoto 能告诉你呢……"
+            }
         }
     }
 }

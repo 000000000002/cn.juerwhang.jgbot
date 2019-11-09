@@ -25,7 +25,8 @@ data class Arguments(
     var location: String = "localhost",
     var targetPort: Int = 56100,
     var socketPort: Int = 56101,
-    var prefix: Array<String> = arrayOf(">", "》")
+    var prefix: Array<String> = arrayOf(">", "》"),
+    var debugMode: Boolean = false
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -37,6 +38,7 @@ data class Arguments(
         if (targetPort != other.targetPort) return false
         if (socketPort != other.socketPort) return false
         if (!prefix.contentEquals(other.prefix)) return false
+        if (debugMode != other.debugMode) return false
 
         return true
     }
@@ -46,6 +48,7 @@ data class Arguments(
         result = 31 * result + targetPort
         result = 31 * result + socketPort
         result = 31 * result + prefix.contentHashCode()
+        result = 31 * result + debugMode.hashCode()
         return result
     }
 }
@@ -59,14 +62,16 @@ fun analyzeArgs(args: Array<out String>): Arguments {
             "target.port" -> result.targetPort = (pair.second?:"56100").toInt()
             "source.port" -> result.socketPort = (pair.second?:"56101").toInt()
             "prefix" -> result.prefix = (pair.second?:">,》").replace("，", ",").split(",").toTypedArray()
+            "debug" -> result.debugMode = true
         }
     }
     return result
 }
 
 lateinit var bot: PicqBotX
+lateinit var arguments: Arguments
 fun main(vararg args: String) {
-    val arguments = analyzeArgs(args)
+    arguments = analyzeArgs(args)
 
     val config = PicqConfig(arguments.socketPort)
     config.isDebug = true
@@ -75,7 +80,8 @@ fun main(vararg args: String) {
     bot.enableCommandManager(*arguments.prefix)
     bot.addAccount("jg-bot", arguments.location, arguments.targetPort)
     bot.logger.log("当前 JGBot 版本: [ %s ]".format(CURRENT_VERSION))
-    bot.logger.log("版本相关信息: %s\n".format(CURRENT_VERSION_SUMMARY))
+    bot.logger.log("版本相关信息: ")
+    CURRENT_VERSION_SUMMARY.split("\n").forEach { bot.logger.log(">> %s".format(it)) }
     bot.logger.log("即将开始注册模块……")
     bot.registerModules()
     bot.startBot()
