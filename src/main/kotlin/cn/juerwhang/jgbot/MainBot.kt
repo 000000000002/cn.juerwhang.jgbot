@@ -16,19 +16,23 @@ fun main(vararg args: String) {
     val startDate = System.currentTimeMillis()
 
     arguments = analyzeArgs(args)
-    initConnect()
 
     val config = PicqConfig(arguments.socketPort)
     config.isDebug = true
     bot = PicqBotX(config)
     bot.enableCommandManager(*arguments.prefix)
+
     bot.logger.log("载入的目标地址: [ %s:%d ]".format(arguments.location, arguments.targetPort))
     bot.addAccount("jg-bot", arguments.location, arguments.targetPort)
+
     bot.logger.log("当前 JGBot 版本: [ %s ]".format(CURRENT_VERSION))
     bot.logger.log("版本相关信息: ")
     CURRENT_VERSION_SUMMARY.split("\n").forEach { bot.logger.log(">> %s".format(it)) }
+
+    initConnect()
     bot.logger.log("即将开始注册模块……")
     bot.registerModules()
+
     bot.startBot()
 
     val endDate = System.currentTimeMillis()
