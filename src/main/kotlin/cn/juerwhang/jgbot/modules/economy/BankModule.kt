@@ -163,4 +163,16 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
     fun getCurrencyByName(name: String): Currency? {
         return Currencies.findOne { it.name eq name }
     }
+
+    fun getOrCreateCurrencyByName(name: String, defaultAmount: Long): Currency {
+        var result = getCurrencyByName(name)
+        if (result == null) {
+            val currencyId = Currencies.insertAndGenerateKey {
+                it.name to name
+                it.defaultAmount to defaultAmount
+            }
+            result = Currencies.findById(currencyId)!!
+        }
+        return result
+    }
 }
