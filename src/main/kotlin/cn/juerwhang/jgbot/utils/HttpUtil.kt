@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import org.apache.http.HttpException
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils.toString
 import java.nio.charset.Charset
@@ -31,7 +32,7 @@ inline fun <reified T> doGet(url: String, vararg params: Pair<String, *>): T {
     }
 
     val request = HttpGet(urlBuilder.toString())
-    val response = client.execute(request)
+    val response = client.execute(request as HttpUriRequest?)
     if (response.statusLine.statusCode != 200) {
         throw HttpException("请求[GET - %s]未成功: %d".format(url, response.statusLine.statusCode))
     } else {

@@ -1,17 +1,17 @@
 package cn.juerwhang.jgbot.modules.basic.entities
 
 import cc.moecraft.logger.HyLogger
-import cn.juerwhang.jgbot.utils.deleteLast
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.datetime
 import me.liuwj.ktorm.schema.long
+import me.liuwj.ktorm.schema.varchar
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
     val id by long("id").primaryKey().bindTo { it.id }
-    val createDate by datetime("create_date").bindTo { it.createDate }
+    val createDate by varchar("create_date").bindTo { it.realCreateDate }
 
     fun createTable(logger: HyLogger) {
         val createTableSql = StringBuilder("create table if not exists ")
@@ -25,7 +25,7 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
             if (column == this.primaryKey) {
                 createTableSql.append(" primary key autoincrement")
             }
-            if (column.name == "create_date" && column.sqlType.typeName == "datetime") {
+            if (column.name == "create_date") {
                 createTableSql.append(" default (datetime('now', 'localtime'))")
             }
             createTableSql.append(",")
@@ -42,9 +42,15 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
     }
 }
 
+val SIMPLE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
 interface BaseEntity<T: BaseEntity<T>>: Entity<T> {
     var id: Long
+    var realCreateDate: String
+
     var createDate: LocalDateTime
+        get() { return LocalDateTime.parse(realCreateDate, SIMPLE_DATE_FORMATTER) }
+        set(value) { realCreateDate = value.format(SIMPLE_DATE_FORMATTER) }
 }
 
 fun mapColumnType(source: String): String {
