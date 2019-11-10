@@ -25,6 +25,9 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
             if (column == this.primaryKey) {
                 createTableSql.append(" primary key autoincrement")
             }
+            if (column.name == "create_date" && column.sqlType.typeName == "datetime") {
+                createTableSql.append(" default (datetime('now', 'localtime'))")
+            }
             createTableSql.append(",")
         }
         if (createTableSql.endsWith(',')) {
