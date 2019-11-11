@@ -18,3 +18,8 @@ fun LocalDateTime.formatTime(): String {
 fun LocalDateTime.formatDateTime(): String {
     return "%s %s".format(this.formatDate(), this.formatTime())
 }
+
+fun LocalDateTime.isToday(): Boolean {
+    val now = LocalDateTime.now()
+    return this.year == now.year && this.dayOfYear == now.dayOfYear
+}

@@ -1,5 +1,6 @@
 package cn.juerwhang.jgbot.modules.economy
 
+import cc.moecraft.icq.user.User
 import cn.juerwhang.jgbot.modules.CqModule
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
 import cn.juerwhang.jgbot.modules.economy.entities.*
@@ -176,3 +177,5 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
         return result
     }
 }
+
+val User.account: Account get() = BankModule.getAccountByQQ(this.id)
