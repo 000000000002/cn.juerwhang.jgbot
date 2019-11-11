@@ -1,6 +1,7 @@
 package cn.juerwhang.jgbot.modules.other
 
-import cn.juerwhang.jgbot.modules.CqModule
+import cn.juerwhang.jgbot.modules.core.CqModule
+import cn.juerwhang.jgbot.modules.core.get
 import cn.juerwhang.jgbot.utils.doGet
 import java.net.UnknownHostException
 import java.util.*
@@ -34,9 +35,11 @@ object HitokotoModule: CqModule(
     "hitokoto",
     "一言，总有那么一句话能够戳中你的心。对 v1.hitokoto.cn 这一API进行封装的模块。"
 ) {
-    private const val HITOKOTO_URL = "https://v1.hitokoto.cn"
-
     private val typeNameMapper = HashMap<String, String>()
+
+    override val defaultConfig: Map<String, String> = mapOf(
+        "url" use "https://v1.hitokoto.cn"
+    )
 
     init {
         typeNameMapper["动画"] = "a"
@@ -60,7 +63,7 @@ object HitokotoModule: CqModule(
                 params.add(Pair("c", typeNameMapper.getOrDefault(args[0], "z")))
             }
             try {
-                val hitokoto = doGet<Hitokoto>(HITOKOTO_URL, *params.toTypedArray())
+                val hitokoto = doGet<Hitokoto>(this@HitokotoModule["url"], *params.toTypedArray())
                 logger.log("一言的请求结果： %s".format(hitokoto.toString()))
                 hitokoto.hitokoto
             } catch (e: UnknownHostException) {

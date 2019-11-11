@@ -4,7 +4,7 @@ import cc.moecraft.icq.PicqBotX
 import cc.moecraft.icq.PicqConfig
 import cn.juerwhang.jgbot.modules.CURRENT_VERSION
 import cn.juerwhang.jgbot.modules.CURRENT_VERSION_SUMMARY
-import cn.juerwhang.jgbot.modules.registerModules
+import cn.juerwhang.jgbot.modules.core.registerModules
 import cn.juerwhang.jgbot.utils.Arguments
 import cn.juerwhang.jgbot.utils.analyzeArgs
 import cn.juerwhang.jgbot.utils.initConnect

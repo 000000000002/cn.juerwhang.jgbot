@@ -1,6 +1,8 @@
 package cn.juerwhang.jgbot.modules
 
 import cn.juerwhang.jgbot.modules.basic.BasicModule
+import cn.juerwhang.jgbot.modules.core.ErrorHandlerModule
+import cn.juerwhang.jgbot.modules.core.RemoteConfigModule
 import cn.juerwhang.jgbot.modules.economy.BankModule
 import cn.juerwhang.jgbot.modules.economy.SignupModule
 import cn.juerwhang.jgbot.modules.other.HitokotoModule
@@ -9,7 +11,7 @@ import cn.juerwhang.jgbot.modules.other.HitokotoModule
 /**
  * 当前版本号
  */
-const val CURRENT_VERSION = "alpha.1.2"
+const val CURRENT_VERSION = "alpha.1.3"
 const val CURRENT_VERSION_SUMMARY = """
 当前版本更新日期：2019年11月11日
 """
@@ -20,8 +22,9 @@ const val CURRENT_VERSION_SUMMARY = """
  */
 val registerModules = arrayOf(
     ErrorHandlerModule,
+    RemoteConfigModule,
     BasicModule,
-    HitokotoModule,
     BankModule,
+    HitokotoModule,
     SignupModule
 )

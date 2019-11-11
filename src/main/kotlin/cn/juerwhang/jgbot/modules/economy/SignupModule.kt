@@ -1,6 +1,6 @@
 package cn.juerwhang.jgbot.modules.economy
 
-import cn.juerwhang.jgbot.modules.CqModule
+import cn.juerwhang.jgbot.modules.core.CqModule
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
 import cn.juerwhang.jgbot.modules.economy.entities.Account
 import cn.juerwhang.jgbot.modules.economy.entities.SignupLog

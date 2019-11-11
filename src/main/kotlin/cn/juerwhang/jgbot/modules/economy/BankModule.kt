@@ -1,5 +1,6 @@
 package cn.juerwhang.jgbot.modules.economy
 
+import cn.juerwhang.jgbot.modules.core.CqModule
 import cc.moecraft.icq.user.User
 import cn.juerwhang.jgbot.modules.CqModule
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable

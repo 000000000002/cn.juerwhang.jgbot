@@ -1,6 +1,6 @@
 package cn.juerwhang.jgbot.modules.basic
 
-import cn.juerwhang.jgbot.modules.CqModule
+import cn.juerwhang.jgbot.modules.core.CqModule
 
 object BasicModule: CqModule(true, "basic", "基础模块，负责提供最基本的控制功能。") {
     private const val ownerUser = 2695996944L

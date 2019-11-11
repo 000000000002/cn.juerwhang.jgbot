@@ -11,7 +11,7 @@
 
 ## 食用方法
 
-> 以下内容适用于版本 alpha.1.2
+> 以下内容适用于版本 alpha.1.3
 
 1. 编写一个模块，并继承 CqModule：
 ```kotlin
@@ -26,7 +26,7 @@ object BasicModule: CqModule(
     private const val ownerUser = 2695996944L
     init {
         // 注册一个私聊命令，用于重载 Picq 的缓存。
-        addPrivateCommand("重载缓存", "reload", "rl") {_, sender, _, _ ->
+        addPrivateCommand("重载缓存", "reload", "rl") {
             if (ownerUser == sender.id) {
                 sender.bot.accountManager.refreshCache()
 
@@ -56,3 +56,17 @@ private val registerModules = arrayOf<CqModule>(
 You -> reload
 Bot -> 缓存已重载！
 ```
+## 版本计划&更新日志
+
+### alpha
+
+##### alpha.1.3
+
+- 使用已有Sqlite作为远程配置，将原本写死与代码中的配置分离出来
+    - 待完成
+
+- 为插件的远程配置制作一个前端页面，用于修改远程配置
+    - 待完成
+
+- 记录版本更迭
+    - 在做了
