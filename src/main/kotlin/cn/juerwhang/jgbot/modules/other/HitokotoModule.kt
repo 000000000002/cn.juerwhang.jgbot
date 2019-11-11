@@ -54,7 +54,7 @@ object HitokotoModule: CqModule(
         typeNameMapper["其他"] = "g"
         typeNameMapper["other"] = "g"
 
-        addEverywhereCommand("hitokoto", "一言") {event, sender, _, args ->
+        addEverywhereCommand("hitokoto", "一言") {
             val params = LinkedList<Pair<String, String>>()
             if (args.size > 0) {
                 params.add(Pair("c", typeNameMapper.getOrDefault(args[0], "z")))

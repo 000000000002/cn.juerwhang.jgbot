@@ -11,9 +11,9 @@ import java.util.*
 
 
 object BankModule: CqModule(true, "银行模块", "用于提供经济系统相关的操作。") {
-    private const val ACCOUNT_ALL_INFO_TEMPLATE = "==== 您当前的账户存款详情 ====\n"
+    private const val ACCOUNT_ALL_INFO_TEMPLATE = "==== 您当前的账户存款详情 ===="
     private const val ACCOUNT_SOME_BANK_INFO_TEMPLATE = "==== 您当前查询的货币存款详情 ===="
-    private const val CURRENCY_INFO_TEMPLATE = ">> %s: %d"
+    private const val CURRENCY_INFO_TEMPLATE = "\n>> %s: %d"
     private const val DEFAULT_LEVEL = 0
 
     override val usingTable: List<BaseTable<*>> = arrayListOf(
@@ -25,11 +25,11 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
     private const val ownerUser = 2695996944L
 
     init {
-        addEverywhereCommand("存款", "账号", "存款信息") {_, sender, _, args ->
+        addEverywhereCommand("存款", "账号", "存款信息") {
             if (args.size == 0) {
                 val resultBuilder = StringBuilder(ACCOUNT_ALL_INFO_TEMPLATE)
                 for (bank in getBanksByQQ(sender.id)) {
-                    resultBuilder.appendln(CURRENCY_INFO_TEMPLATE.format(bank.currency.name, bank.amount))
+                    resultBuilder.append(CURRENCY_INFO_TEMPLATE.format(bank.currency.name, bank.amount))
                 }
                 resultBuilder.toString()
             } else {
@@ -39,7 +39,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
             }
         }
 
-        addPrivateCommand("添加货币", "add-currency", "add-crc") {_, sender, _, args ->
+        addPrivateCommand("添加货币", "add-currency", "add-crc") {
             if (sender.id == ownerUser) {
                 if (args.size == 0) {
                     "输入参数错误！正确格式：\n添加货币 <货币名称> [默认货币量 = 0]"
@@ -57,7 +57,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
             }
         }
 
-        addPrivateCommand("修改货币", "mod-currency", "mod-crc") {_, sender, _, args ->
+        addPrivateCommand("修改货币", "mod-currency", "mod-crc") {
             if (sender.id == ownerUser) {
                 if (args.size < 2) {
                     "输入参数错误！正确格式：\n修改货币 <货币名称> <新名称> [默认货币量]"
@@ -81,7 +81,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
             }
         }
 
-        addEverywhereCommand("货币列表", "currency-list", "crc-list", "crc-ls") {_, _, _, _ ->
+        addEverywhereCommand("货币列表", "currency-list", "crc-list", "crc-ls") {
             val resultBuilder = StringBuilder("==== 当前已有货币列表 ====\n")
             for (currency in Currencies.asSequence()) {
                 resultBuilder.appendln("[ %s ( 默认值 : %d ) ]".format(currency.name, currency.defaultAmount))
