@@ -29,7 +29,7 @@ interface Currency: BaseEntity<Currency> {
 object Banks: BaseTable<Bank>("table_banks") {
     val account by long("account").references(Accounts) { it.account }
     val currency by long("currency").references(Currencies) { it.currency }
-    val amount by long("amount")
+    val amount by long("amount").bindTo { it.amount }
 }
 
 interface Bank: BaseEntity<Bank> {
