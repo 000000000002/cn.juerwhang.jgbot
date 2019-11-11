@@ -6,7 +6,7 @@ import me.liuwj.ktorm.schema.varchar
 
 object RemoteConfigs: BaseTable<RemoteConfig>("table_remote_config") {
     val module by varchar("module").bindTo { it.module }
-    val name by varchar("name").bindTo { it.module }
+    val name by varchar("name").bindTo { it.name }
     val value by varchar("value").bindTo { it.value }
 }
 
