@@ -106,13 +106,15 @@ open class FunctionalCommand(
     }
 }
 
-typealias GroupCommandCallback = (
-    event: EventGroupMessage,
-    sender: GroupUser,
-    group: Group,
-    message: String,
-    args: ArrayList<String>
-) -> String
+typealias GroupCommandCallback = GroupCommandArgument.() -> String
+
+data class GroupCommandArgument (
+    val event: EventGroupMessage,
+    val sender: GroupUser,
+    val group: Group,
+    val message: String,
+    val args: ArrayList<String>
+)
 
 class FunctionalGroupCommand(
     parentModule: CqModule,
@@ -127,16 +129,18 @@ class FunctionalGroupCommand(
         command: String?,
         args: ArrayList<String>?
     ): String {
-        return block(event!!, sender!!, group!!, command!!, args?: ArrayList())
+        return block(GroupCommandArgument(event!!, sender!!, group!!, command!!, args?: ArrayList()))
     }
 }
 
-typealias PrivateCommandCallback = (
-    event: EventPrivateMessage,
-    sender: User,
-    command: String,
-    args: ArrayList<String>
-) -> String
+typealias PrivateCommandCallback = PrivateCommandArgument.() -> String
+
+data class PrivateCommandArgument (
+    val event: EventPrivateMessage,
+    val sender: User,
+    val command: String,
+    val args: ArrayList<String>
+)
 
 class FunctionalPrivateCommand(
     parentModule: CqModule,
@@ -150,17 +154,19 @@ class FunctionalPrivateCommand(
         command: String?,
         args: ArrayList<String>?
     ): String {
-        return block(event!!, sender!!, command!!, args?: ArrayList())
+        return block(PrivateCommandArgument(event!!, sender!!, command!!, args?: ArrayList()))
     }
 }
 
-typealias DiscussCommandCallback = (
-    event: EventDiscussMessage,
-    sender: GroupUser,
-    discuss: Group,
-    command: String,
-    args: ArrayList<String>
-) -> String
+typealias DiscussCommandCallback = DiscussCommandArgument.() -> String
+
+data class DiscussCommandArgument (
+    val event: EventDiscussMessage,
+    val sender: GroupUser,
+    val discuss: Group,
+    val command: String,
+    val args: ArrayList<String>
+)
 
 class FunctionalDiscussCommand(
     parentModule: CqModule,
@@ -175,16 +181,18 @@ class FunctionalDiscussCommand(
         command: String?,
         args: ArrayList<String>?
     ): String {
-        return block(event!!, sender!!, discuss!!, command!!, args?: ArrayList())
+        return block(DiscussCommandArgument(event!!, sender!!, discuss!!, command!!, args?: ArrayList()))
     }
 }
 
-typealias EverywhereCommandCallback = (
-    event: EventMessage,
-    sender: User,
-    command: String,
-    args: ArrayList<String>
-) -> String
+typealias EverywhereCommandCallback = EverywhereCommandArgument.() -> String
+
+data class EverywhereCommandArgument (
+    val event: EventMessage,
+    val sender: User,
+    val command: String,
+    val args: ArrayList<String>
+)
 
 class FunctionalEverywhereCommand(
     parentModule: CqModule,
@@ -199,7 +207,7 @@ class FunctionalEverywhereCommand(
         args: ArrayList<String>?
     ): String {
         parentModule.logger.log("处理来自于 %d 的命令: %s (%s)".format(sender?.id, command, (args?: ArrayList()).toArray().joinToString()))
-        return block(event!!, sender!!, command!!, args?: ArrayList())
+        return block(EverywhereCommandArgument(event!!, sender!!, command!!, args?: ArrayList()))
     }
 }
 
