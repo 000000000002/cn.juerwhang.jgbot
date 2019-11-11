@@ -6,7 +6,7 @@ import me.liuwj.ktorm.schema.long
 
 object SignupLogs: BaseTable<SignupLog>("table_signup_logs") {
     val account by long("account").references(Accounts) { it.account }
-    val amount by long("amount")
+    val amount by long("amount").bindTo { it.amount }
 }
 
 interface SignupLog: BaseEntity<SignupLog> {
