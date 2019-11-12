@@ -1,8 +1,9 @@
 package cn.juerwhang.jgbot.modules.other
 
 import cn.juerwhang.jgbot.modules.core.CqModule
-import cn.juerwhang.jgbot.modules.core.get
+import cn.juerwhang.jgbot.modules.core.conf
 import cn.juerwhang.jgbot.utils.doGet
+import cn.juerwhang.jgbot.utils.toJson
 import java.net.UnknownHostException
 import java.util.*
 import kotlin.collections.HashMap
@@ -26,7 +27,7 @@ data class Hitokoto(
     val createdAt: Long
 ) {
     override fun toString(): String {
-        return "{id: %d, type: %s, from: %s, creator: %s, hitokoto: %s}".format(id, type, from, creator, hitokoto)
+        return this.toJson()
     }
 }
 
@@ -37,9 +38,7 @@ object HitokotoModule: CqModule(
 ) {
     private val typeNameMapper = HashMap<String, String>()
 
-    override val defaultConfig: Map<String, String> = mapOf(
-        "url" use "https://v1.hitokoto.cn"
-    )
+    private val url by conf("https://v1.hitokoto.cn")
 
     init {
         typeNameMapper["动画"] = "a"
@@ -63,7 +62,7 @@ object HitokotoModule: CqModule(
                 params.add(Pair("c", typeNameMapper.getOrDefault(args[0], "z")))
             }
             try {
-                val hitokoto = doGet<Hitokoto>(this@HitokotoModule["url"], *params.toTypedArray())
+                val hitokoto = doGet<Hitokoto>(this@HitokotoModule.url, *params.toTypedArray())
                 logger.log("一言的请求结果： %s".format(hitokoto.toString()))
                 hitokoto.hitokoto
             } catch (e: UnknownHostException) {

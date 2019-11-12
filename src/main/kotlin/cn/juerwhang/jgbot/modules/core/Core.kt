@@ -13,12 +13,10 @@ import cc.moecraft.icq.event.events.message.EventPrivateMessage
 import cc.moecraft.icq.user.Group
 import cc.moecraft.icq.user.GroupUser
 import cc.moecraft.icq.user.User
-import cn.hutool.json.JSONUtil
 import cn.juerwhang.jgbot.arguments
 import cn.juerwhang.jgbot.bot
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
 import java.util.*
-import kotlin.collections.HashMap
 
 
 /**
@@ -56,10 +54,6 @@ open class CqModule(
      * 该模块依赖的表，这些表将会自动初始化（如果不存在的话）。
      */
     open val usingTable: List<BaseTable<*>> = emptyList()
-    /**
-     * 该模块所使用的配置项，这些配置项将会自动初始化（如果不存在的话）。
-     */
-    open val defaultConfig: Map<String, String> = emptyMap()
 
     fun register(bot: PicqBotX) {
         logger.log(">> ======== 正在注册模块 ======== <<")
@@ -115,10 +109,6 @@ open class CqModule(
                 block = block
             )
         )
-    }
-
-    infix fun String.use(value: Any): Pair<String, String> {
-        return Pair(this, JSONUtil.toJsonStr(value))
     }
 }
 

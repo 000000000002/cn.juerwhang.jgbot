@@ -6,7 +6,8 @@ data class Arguments(
     var targetPort: Int = 56100,
     var socketPort: Int = 56101,
     var prefix: Array<String> = arrayOf(">", "》"),
-    var debugMode: Boolean = false
+    var debugMode: Boolean = false,
+    var showSQL: Boolean = false
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -19,6 +20,7 @@ data class Arguments(
         if (socketPort != other.socketPort) return false
         if (!prefix.contentEquals(other.prefix)) return false
         if (debugMode != other.debugMode) return false
+        if (showSQL != other.showSQL) return false
 
         return true
     }
@@ -29,6 +31,7 @@ data class Arguments(
         result = 31 * result + socketPort
         result = 31 * result + prefix.contentHashCode()
         result = 31 * result + debugMode.hashCode()
+        result = 31 * result + showSQL.hashCode()
         return result
     }
 }
@@ -37,12 +40,13 @@ fun analyzeArgs(args: Array<out String>): Arguments {
     val result = Arguments()
     args.forEach {
         val pair = splitToPair(it)
-        when(pair?.first) {
+        when(pair?.first?.toLowerCase()) {
             "location" -> result.location = pair.second?:"localhost"
             "target.port" -> result.targetPort = (pair.second?:"56100").toInt()
             "source.port" -> result.socketPort = (pair.second?:"56101").toInt()
             "prefix" -> result.prefix = (pair.second?:">,》").replace("，", ",").split(",").toTypedArray()
             "debug" -> result.debugMode = true
+            "showsql" -> result.showSQL = true
         }
     }
     return result

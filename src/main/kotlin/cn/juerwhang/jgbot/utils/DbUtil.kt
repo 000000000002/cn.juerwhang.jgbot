@@ -1,10 +1,11 @@
 package cn.juerwhang.jgbot.utils
 
+import cc.moecraft.logger.HyLogger
 import cn.juerwhang.jgbot.arguments
+import cn.juerwhang.jgbot.bot
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.expression.*
-import me.liuwj.ktorm.logging.ConsoleLogger
-import me.liuwj.ktorm.logging.LogLevel
+import me.liuwj.ktorm.logging.Logger
 import me.liuwj.ktorm.schema.*
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import me.liuwj.ktorm.support.sqlite.SQLiteFormatter
@@ -18,7 +19,10 @@ fun initConnect() {
         url = "jdbc:sqlite:%s".format(DB_PATH),
         driver = "org.sqlite.JDBC",
         dialect = CallableSQLiteDialect(),
-        logger = if (arguments.debugMode) ConsoleLogger(LogLevel.DEBUG) else null
+        logger = if (arguments.showSQL)
+            ConsoleLoggerDelegate(bot.loggerInstanceManager.getLoggerInstance("Ktorm", arguments.debugMode))
+        else
+            null
     )
 }
 
@@ -67,13 +71,10 @@ fun <T: Any> call(name: String, vararg args: Any): DbCallFuncExpression<T> {
     val realArgs = LinkedList<SqlExpression>()
     for (arg in args) {
         realArgs.add(if (arg !is SqlExpression) {
-            if (arg is LocalDateTime) {
-                ArgumentExpression(arg as LocalDateTime, LocalDateTimeSqlType)
-            } else if (arg is Column<*>) {
-                val column = arg as Column<*>
-                ColumnExpression(column.table.tableName, column.name, column.sqlType)
-            } else {
-                ArgumentExpression(arg.toString(), VarcharSqlType)
+            when (arg) {
+                is LocalDateTime -> ArgumentExpression(arg, LocalDateTimeSqlType)
+                is Column<*> -> ColumnExpression(arg.table.tableName, arg.name, arg.sqlType)
+                else -> ArgumentExpression(arg.toString(), VarcharSqlType)
             }
         } else {
             arg
@@ -85,3 +86,48 @@ fun <T: Any> call(name: String, vararg args: Any): DbCallFuncExpression<T> {
 
 val callFuncSqlType = HashMap<String, SqlType<*>>()
 
+class ConsoleLoggerDelegate(private val logger: HyLogger): Logger {
+    private fun printError(e: Throwable, printFunc: (String?) -> Unit) {
+        printFunc(e.message)
+        e.stackTrace.forEach { printFunc(it.toString()) }
+        if (e.cause != null && e.cause != e) {
+            printFunc("\n")
+            printError(e.cause!!, printFunc)
+        }
+    }
+
+    override fun debug(msg: String, e: Throwable?) {
+        logger.debug(msg)
+        e?.let { printError(e, logger::debug) }
+    }
+
+    override fun error(msg: String, e: Throwable?) {
+        logger.error(msg)
+        e?.let { printError(e, logger::error) }
+    }
+
+    override fun info(msg: String, e: Throwable?) {
+        logger.log(msg)
+        e?.let { printError(e, logger::log) }
+    }
+
+    override fun trace(msg: String, e: Throwable?) {
+        logger.error(msg)
+        e?.let { printError(e, logger::error) }
+    }
+
+    override fun warn(msg: String, e: Throwable?) {
+        logger.warning(msg)
+        e?.let { printError(e, logger::warning) }
+    }
+
+    override fun isDebugEnabled(): Boolean = true
+
+    override fun isErrorEnabled(): Boolean = true
+
+    override fun isInfoEnabled(): Boolean = true
+
+    override fun isTraceEnabled(): Boolean = true
+
+    override fun isWarnEnabled(): Boolean = true
+}
