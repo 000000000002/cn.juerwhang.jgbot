@@ -26,6 +26,21 @@ fun initConnect() {
     )
 }
 
+/**
+ * 判断表是否已存在。
+ * @param name 欲判断的表名
+ * @return 若存在则为true，否则为false
+ */
+fun Database.Companion.existsTable(name: String): Boolean = this.global.useConnection {
+    val statement = it.prepareStatement("select count(0) from sqlite_master where type = 'table' and tbl_name = ?")
+    statement.setString(1, name)
+    val resultSet = statement.executeQuery()
+    resultSet.first()
+    val result = resultSet.getInt(1) > 0
+    resultSet.close()
+    return result
+}
+
 data class DbCallFuncExpression<T : Any>(
     val name: String,
     val args: List<SqlExpression>,

@@ -1,6 +1,7 @@
 package cn.juerwhang.jgbot.modules.basic.entities
 
 import cc.moecraft.logger.HyLogger
+import cn.juerwhang.jgbot.utils.existsTable
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.Table
@@ -14,30 +15,34 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
     val createDate by varchar("create_date").bindTo { it.realCreateDate }
 
     fun createTable(logger: HyLogger) {
-        val createTableSql = StringBuilder("create table if not exists ")
-            .append(this.tableName)
-            .append(" (")
-        for (column in this.columns) {
-            createTableSql
-                .append(column.name)
-                .append(" ")
-                .append(mapColumnType(column.sqlType.typeName))
-            if (column == this.primaryKey) {
-                createTableSql.append(" primary key autoincrement")
+        if (Database.existsTable(this.tableName)) {
+            logger.log("表已存在，跳过初始化：${this.tableName}")
+        } else {
+            val createTableSql = StringBuilder("create table if not exists ")
+                .append(this.tableName)
+                .append(" (")
+            for (column in this.columns) {
+                createTableSql
+                    .append(column.name)
+                    .append(" ")
+                    .append(mapColumnType(column.sqlType.typeName))
+                if (column == this.primaryKey) {
+                    createTableSql.append(" primary key autoincrement")
+                }
+                if (column.name == "create_date") {
+                    createTableSql.append(" default (datetime('now', 'localtime'))")
+                }
+                createTableSql.append(",")
             }
-            if (column.name == "create_date") {
-                createTableSql.append(" default (datetime('now', 'localtime'))")
+            if (createTableSql.endsWith(',')) {
+                createTableSql.deleteCharAt(createTableSql.length - 1)
             }
-            createTableSql.append(",")
-        }
-        if (createTableSql.endsWith(',')) {
-            createTableSql.deleteCharAt(createTableSql.length - 1)
-        }
-        createTableSql.append(")")
+            createTableSql.append(")")
 
-        logger.log(">> 尝试执行SQL语句 --> %s".format(createTableSql.toString()))
-        Database.global.useConnection {
-            it.createStatement().execute(createTableSql.toString())
+            logger.log(">> 表不存在，尝试初始化，执行SQL语句：$createTableSql")
+            Database.global.useConnection {
+                it.createStatement().execute(createTableSql.toString())
+            }
         }
     }
 }

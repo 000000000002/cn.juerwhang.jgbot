@@ -23,7 +23,10 @@ object BasicModule: CqModule(
     // 该模块的描述，目前仅用于调试。
     "基础模块，负责提供最基本的控制功能。"
 ) {
-    private const val ownerUser = 2695996944L
+    // alpha.1.3之后添加新功能，使用远程配置，更加灵活
+    // 使用 2695996944L 作为默认值
+    private var ownerUser by conf(2695996944L)
+
     init {
         // 注册一个私聊命令，用于重载 Picq 的缓存。
         addPrivateCommand("重载缓存", "reload", "rl") {
@@ -41,7 +44,9 @@ object BasicModule: CqModule(
 
 2. 将这个模块加入到待注册列表中，等待注册：
 ```kotlin
-// -> cn/juerwhang/jgbot/modules/ModuleRegister.kt
+/**
+ * -> cn/juerwhang/jgbot/modules/ModuleRegister.kt
+ */
 
 /**
  * 待注册模块，用于手动添加需要注册的模块。
