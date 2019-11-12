@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "cn.juerwhang"
-version = "alpha.1.2"
+version = "alpha.1.3"
 
 repositories {
     mavenCentral()
