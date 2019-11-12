@@ -13,6 +13,7 @@ import cc.moecraft.icq.event.events.message.EventPrivateMessage
 import cc.moecraft.icq.user.Group
 import cc.moecraft.icq.user.GroupUser
 import cc.moecraft.icq.user.User
+import cc.moecraft.logger.format.AnsiColor.*
 import cn.juerwhang.jgbot.arguments
 import cn.juerwhang.jgbot.bot
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
@@ -56,31 +57,27 @@ open class CqModule(
     open val usingTable: List<BaseTable<*>> = emptyList()
 
     fun register(bot: PicqBotX) {
-        logger.log(">> ======== 正在注册模块 ======== <<")
-        logger.log(">> 模块信息：%s".format(summary))
+        logger.log("$CYAN>> ========$RESET 正在注册模块$CYAN ======== <<")
+        logger.log("$CYAN>>$YELLOW 模块信息$RESET：$summary")
         if (enabled) {
             if (registerSelf) {
-                logger.log(">> 将模块注册为事件监听器！")
+                logger.log("$CYAN>>$GREEN 将模块注册为事件监听器！")
                 bot.eventManager.registerListener(this)
             }
             for (command in commandList.toTypedArray()) {
                 logger.log(
-                    ">> 注册命令 [ %s ( %s ) ] -> %s".format(
-                        command.properties().name,
-                        command.properties().alias.joinToString(),
-                        command.type
-                    )
+                    "$CYAN>>$YELLOW 注册命令$RESET [ $CYAN ${command.type}$YELLOW ->$RESET ${command.properties().name} ($WHITE ${command.properties().alias.joinToString()}$RESET ) ]"
                 )
                 bot.commandManager.registerCommand(command)
             }
             for (table in usingTable) {
-                logger.log(">> 引用表：%s".format(table.tableName))
+                logger.log("$CYAN>>$YELLOW 引用表$RESET：${table.tableName}")
                 table.createTable(this.logger)
             }
         } else {
-            logger.log(">> 模块未启用，抛弃。")
+            logger.log("$CYAN>>$RED 模块未启用，抛弃。")
         }
-        logger.log(">> ======== 模块注册完毕 ======== <<")
+        logger.log("$CYAN>> ========$RESET 模块注册完毕$CYAN ======== <<")
     }
 
     private fun addCommand(command: FunctionalCommand): CqModule {

@@ -1,6 +1,7 @@
 package cn.juerwhang.jgbot.modules.basic.entities
 
 import cc.moecraft.logger.HyLogger
+import cc.moecraft.logger.format.AnsiColor.*
 import cn.juerwhang.jgbot.utils.existsTable
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.Entity
@@ -16,7 +17,7 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
 
     fun createTable(logger: HyLogger) {
         if (Database.existsTable(this.tableName)) {
-            logger.log("表已存在，跳过初始化：${this.tableName}")
+            logger.log("$CYAN>>$PURPLE 表已存在，跳过初始化：$WHITE${this.tableName}")
         } else {
             val createTableSql = StringBuilder("create table if not exists ")
                 .append(this.tableName)
@@ -39,7 +40,7 @@ open class BaseTable<T: BaseEntity<T>>(table: String): Table<T>(table) {
             }
             createTableSql.append(")")
 
-            logger.log(">> 表不存在，尝试初始化，执行SQL语句：$createTableSql")
+            logger.log("$CYAN>>$YELLOW 表不存在，尝试初始化，执行SQL语句：$RESET$createTableSql")
             Database.global.useConnection {
                 it.createStatement().execute(createTableSql.toString())
             }

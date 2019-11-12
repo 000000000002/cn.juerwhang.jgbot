@@ -35,7 +35,7 @@ fun Database.Companion.existsTable(name: String): Boolean = this.global.useConne
     val statement = it.prepareStatement("select count(0) from sqlite_master where type = 'table' and tbl_name = ?")
     statement.setString(1, name)
     val resultSet = statement.executeQuery()
-    resultSet.first()
+    resultSet.next()
     val result = resultSet.getInt(1) > 0
     resultSet.close()
     return result

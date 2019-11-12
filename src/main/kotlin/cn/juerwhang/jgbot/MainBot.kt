@@ -2,6 +2,7 @@ package cn.juerwhang.jgbot
 
 import cc.moecraft.icq.PicqBotX
 import cc.moecraft.icq.PicqConfig
+import cc.moecraft.logger.format.AnsiColor.*
 import cn.juerwhang.jgbot.modules.CURRENT_VERSION
 import cn.juerwhang.jgbot.modules.CURRENT_VERSION_SUMMARY
 import cn.juerwhang.jgbot.modules.core.registerModules
@@ -22,19 +23,19 @@ fun main(vararg args: String) {
     bot = PicqBotX(config)
     bot.enableCommandManager(*arguments.prefix)
 
-    bot.logger.log("载入的目标地址: [ %s:%d ]".format(arguments.location, arguments.targetPort))
+    bot.logger.log("${YELLOW}载入的目标地址\t$CYAN[ ${arguments.location}:${arguments.targetPort} ]")
     bot.addAccount("jg-bot", arguments.location, arguments.targetPort)
 
-    bot.logger.log("当前 JGBot 版本: [ %s ]".format(CURRENT_VERSION))
-    bot.logger.log("版本相关信息: ")
-    CURRENT_VERSION_SUMMARY.split("\n").forEach { bot.logger.log(">> %s".format(it)) }
+    bot.logger.log("${YELLOW}当前JGBot版本\t$CYAN[ $CURRENT_VERSION ]")
+    bot.logger.log("${YELLOW}版本相关信息: ")
+    CURRENT_VERSION_SUMMARY.split("\n").forEach { bot.logger.log("$CYAN>>$RESET $it") }
 
     initConnect()
-    bot.logger.log("即将开始注册模块……")
+    bot.logger.log("${YELLOW}即将开始注册模块……")
     bot.registerModules()
 
     bot.startBot()
 
     val endDate = System.currentTimeMillis()
-    bot.logger.log("启动完毕，共耗时 %f 秒！".format((endDate - startDate)/1000.0))
+    bot.logger.log("${GREEN}启动完毕，共耗时$RESET ${(endDate - startDate)/1000.0}$GREEN 秒！")
 }
