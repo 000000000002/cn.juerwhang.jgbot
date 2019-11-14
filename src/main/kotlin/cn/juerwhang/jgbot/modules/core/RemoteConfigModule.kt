@@ -13,7 +13,7 @@ object RemoteConfigModule: CqModule(
     "远程配置模块",
     "为其他模块提供远程配置能力，并开放一个web应用，用于编辑相关配置。"
 ) {
-    override val usingTable: List<BaseTable<*>> = arrayListOf(
+    override val usingTable: List<BaseTable<*>> get() = arrayListOf(
         RemoteConfigs
     )
 

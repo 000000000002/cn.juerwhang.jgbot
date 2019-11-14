@@ -16,7 +16,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
     private const val CURRENCY_INFO_TEMPLATE = "\n>> %s: %d"
     private const val DEFAULT_LEVEL = 0
 
-    override val usingTable: List<BaseTable<*>> = arrayListOf(
+    override val usingTable: List<BaseTable<*>> get() = arrayListOf(
         Accounts,
         Currencies,
         Banks

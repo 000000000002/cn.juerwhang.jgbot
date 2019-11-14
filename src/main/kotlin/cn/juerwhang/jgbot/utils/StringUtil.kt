@@ -19,3 +19,13 @@ fun splitToPair(arg: String): Pair<String, String?>? {
     }
     return result
 }
+
+fun String.asTemplate(args: Map<String, String>): String {
+    var result = this
+    val regex = Regex("(?!\\\\)&.+?&")
+    for (matchStr in regex.findAll(result)) {
+        val temp = matchStr.value
+        result = result.replace(temp, args.getOrDefault(temp.substring(1, temp.length - 1), ""))
+    }
+    return result
+}

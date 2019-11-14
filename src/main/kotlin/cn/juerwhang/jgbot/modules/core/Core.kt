@@ -54,7 +54,16 @@ open class CqModule(
     /**
      * 该模块依赖的表，这些表将会自动初始化（如果不存在的话）。
      */
-    open val usingTable: List<BaseTable<*>> = emptyList()
+    open val usingTable: List<BaseTable<*>> get() = emptyList()
+
+    init {
+        logger.log("$CYAN>> ========$RESET 初始化模块$CYAN ======== <<")
+        for (table in this.usingTable) {
+            logger.log("$CYAN>>$YELLOW 引用表$RESET：${table.tableName}")
+            table.createTable(this.logger)
+        }
+        logger.log("$CYAN>> ========$RESET 初始化完毕$CYAN ======== <<")
+    }
 
     fun register(bot: PicqBotX) {
         logger.log("$CYAN>> ========$RESET 正在注册模块$CYAN ======== <<")
@@ -69,10 +78,6 @@ open class CqModule(
                     "$CYAN>>$YELLOW 注册命令$RESET [ $CYAN ${command.type}$YELLOW ->$RESET ${command.properties().name} ($WHITE ${command.properties().alias.joinToString()}$RESET ) ]"
                 )
                 bot.commandManager.registerCommand(command)
-            }
-            for (table in usingTable) {
-                logger.log("$CYAN>>$YELLOW 引用表$RESET：${table.tableName}")
-                table.createTable(this.logger)
             }
         } else {
             logger.log("$CYAN>>$RED 模块未启用，抛弃。")

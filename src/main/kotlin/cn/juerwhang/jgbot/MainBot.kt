@@ -19,9 +19,11 @@ fun main(vararg args: String) {
     arguments = analyzeArgs(args)
 
     val config = PicqConfig(arguments.socketPort)
+
     config.isDebug = true
     bot = PicqBotX(config)
     bot.enableCommandManager(*arguments.prefix)
+    initConnect()
 
     bot.logger.log("${YELLOW}载入的目标地址\t$CYAN[ ${arguments.location}:${arguments.targetPort} ]")
     bot.addAccount("jg-bot", arguments.location, arguments.targetPort)
@@ -30,7 +32,6 @@ fun main(vararg args: String) {
     bot.logger.log("${YELLOW}版本相关信息: ")
     CURRENT_VERSION_SUMMARY.split("\n").forEach { bot.logger.log("$CYAN>>$RESET $it") }
 
-    initConnect()
     bot.logger.log("${YELLOW}即将开始注册模块……")
     bot.registerModules()
 
