@@ -29,3 +29,7 @@ fun String.asTemplate(args: Map<String, String>): String {
     }
     return result
 }
+
+fun String.asTemplate(vararg args: Pair<String, String>): String {
+    return this.asTemplate(mapOf(*args))
+}

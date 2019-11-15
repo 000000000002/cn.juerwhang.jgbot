@@ -9,6 +9,7 @@ import cn.juerwhang.jgbot.modules.core.registerModules
 import cn.juerwhang.jgbot.utils.Arguments
 import cn.juerwhang.jgbot.utils.analyzeArgs
 import cn.juerwhang.jgbot.utils.initConnect
+import cn.juerwhang.jgbot.utils.toJson
 
 
 lateinit var bot: PicqBotX
@@ -22,6 +23,8 @@ fun main(vararg args: String) {
 
     config.isDebug = true
     bot = PicqBotX(config)
+    bot.logger.log("${YELLOW}加载配置: $RESET${arguments.toJson()}")
+
     bot.enableCommandManager(*arguments.prefix)
     initConnect()
 

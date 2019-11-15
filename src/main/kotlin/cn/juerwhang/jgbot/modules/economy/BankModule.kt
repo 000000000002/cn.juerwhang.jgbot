@@ -3,33 +3,38 @@ package cn.juerwhang.jgbot.modules.economy
 import cc.moecraft.icq.user.User
 import cn.juerwhang.jgbot.modules.core.CqModule
 import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
+import cn.juerwhang.jgbot.modules.core.conf
 import cn.juerwhang.jgbot.modules.economy.entities.*
 import cn.juerwhang.jgbot.modules.economy.entities.Currency
+import cn.juerwhang.jgbot.utils.asTemplate
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.*
 import java.util.*
 
 
 object BankModule: CqModule(true, "银行模块", "用于提供经济系统相关的操作。") {
-    private const val ACCOUNT_ALL_INFO_TEMPLATE = "==== 您当前的账户存款详情 ===="
-    private const val ACCOUNT_SOME_BANK_INFO_TEMPLATE = "==== 您当前查询的货币存款详情 ===="
-    private const val CURRENCY_INFO_TEMPLATE = "\n>> %s: %d"
-    private const val DEFAULT_LEVEL = 0
-
     override val usingTable: List<BaseTable<*>> get() = arrayListOf(
         Accounts,
         Currencies,
         Banks
     )
 
-    private const val ownerUser = 2695996944L
+    private val ownerUser by conf(2695996944L)
+
+    private val ACCOUNT_ALL_INFO_TEMPLATE by conf("==== 您当前的账户存款详情 ====")
+    private val ACCOUNT_SOME_BANK_INFO_TEMPLATE by conf("==== 您当前查询的货币存款详情 ====")
+    private val CURRENCY_INFO_TEMPLATE by conf("\n>> &curr-name&: &curr-count&")
+    private val DEFAULT_LEVEL by conf(0)
 
     init {
         addEverywhereCommand("存款", "账号", "存款信息") {
             if (args.size == 0) {
                 val resultBuilder = StringBuilder(ACCOUNT_ALL_INFO_TEMPLATE)
                 for (bank in getBanksByQQ(sender.id)) {
-                    resultBuilder.append(CURRENCY_INFO_TEMPLATE.format(bank.currency.name, bank.amount))
+                    resultBuilder.append(CURRENCY_INFO_TEMPLATE.asTemplate(
+                        "curr-name" to bank.currency.name,
+                        "curr-count" to bank.amount.toString()
+                    ))
                 }
                 resultBuilder.toString()
             } else {
@@ -50,7 +55,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
                         it.name to currencyName
                         it.defaultAmount to defaultValue
                     }
-                    "[ %s ] 添加成功！ID: %d".format(currencyName, newId)
+                    "[ $currencyName ] 添加成功！ID: $newId"
                 }
             } else {
                 ""
@@ -65,7 +70,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
                     val oldName = args[0]
                     val currency = getCurrencyByName(oldName)
                     if (currency == null) {
-                        "不存在名为 [ %s ] 的货币！请尝试使用 添加货币 指令！"
+                        "不存在名为 [ $oldName ] 的货币！请尝试使用 添加货币 指令！"
                     } else {
                         val newName = args[1]
                         val defaultValue = if (args.size > 2) args[2].toLong() else currency.defaultAmount
@@ -84,7 +89,7 @@ object BankModule: CqModule(true, "银行模块", "用于提供经济系统相�
         addEverywhereCommand("货币列表", "currency-list", "crc-list", "crc-ls") {
             val resultBuilder = StringBuilder("==== 当前已有货币列表 ====\n")
             for (currency in Currencies.asSequence()) {
-                resultBuilder.appendln("[ %s ( 默认值 : %d ) ]".format(currency.name, currency.defaultAmount))
+                resultBuilder.appendln("[ ${currency.name} ( 默认值 : ${currency.defaultAmount} ) ]")
             }
 
             resultBuilder.toString()
