@@ -14,7 +14,11 @@ apply {
 }
 
 group = "cn.juerwhang"
-version = "alpha.1.3"
+version = "alpha.2.0"
+
+object Version {
+    const val ktor = "1.2.5"
+}
 
 application {
     mainClassName = "cn.juerwhang.jgbot.MainBotKt"
@@ -22,18 +26,19 @@ application {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     jcenter()
     maven("https://jitpack.io")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.github.hydevelop:PicqBotX:4.12.0.991.PRE")
+    implementation("com.github.JuerGenie:juerobot:alpha.1.8")
     implementation("org.apache.httpcomponents:httpclient:4.5.10")
 
-    implementation("me.liuwj.ktorm:ktorm-core:2.6")
-    implementation("me.liuwj.ktorm:ktorm-support-sqlite:2.6")
-    implementation("org.xerial:sqlite-jdbc:3.28.0")
+    implementation("io.ktor:ktor-http:${Version.ktor}")
+    implementation("io.ktor:ktor-server-core:${Version.ktor}")
+    implementation("io.ktor:ktor-server-netty:${Version.ktor}")
 }
 
 //tasks.withType<KotlinCompile> {

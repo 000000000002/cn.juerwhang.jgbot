@@ -1,15 +1,15 @@
 package cn.juerwhang.jgbot.modules.economy
 
-import cn.juerwhang.jgbot.modules.core.CqModule
-import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
-import cn.juerwhang.jgbot.modules.core.conf
 import cn.juerwhang.jgbot.modules.economy.entities.Account
 import cn.juerwhang.jgbot.modules.economy.entities.SignupLog
 import cn.juerwhang.jgbot.modules.economy.entities.SignupLogs
-import cn.juerwhang.jgbot.utils.asTemplate
 import cn.juerwhang.jgbot.utils.call
 import cn.juerwhang.jgbot.utils.formatDateTime
-import cn.juerwhang.jgbot.utils.isToday
+import cn.juerwhang.juerobot.core.CqModule
+import cn.juerwhang.juerobot.core.rc
+import cn.juerwhang.juerobot.store.BaseTable
+import cn.juerwhang.juerobot.utils.asTemplate
+import cn.juerwhang.juerobot.utils.isToday
 import me.liuwj.ktorm.dsl.count
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.insert
@@ -17,70 +17,79 @@ import me.liuwj.ktorm.entity.*
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-object SignupModule: CqModule(true, "签到模块", "提供每日签到功能，并奖励指定的货币。") {
-    private val signupAwardCurrency by conf("节操")
-    private val SIGNUP_SUCCESS_TEMPLATE by conf(
+object SignupModule: CqModule(
+    "签到模块",
+    "提供每日签到功能，并奖励指定的货币。",
+    true
+) {
+    private val signupAwardCurrency by rc("节操")
+    private val SIGNUP_SUCCESS_TEMPLATE by rc(
         "==== 签到成功 ====\n" +
                 ">> 签到时间：&sign-time&\n" +
                 ">> 签到奖励：&amount& &currency-name&".trimIndent())
-    private val SIGNUP_ALREADY_TEMPLATE by conf(
+    private val SIGNUP_ALREADY_TEMPLATE by rc(
         "==== 签到失败 ====\n" +
                 ">> 您今天已经签到啦！\n" +
                 ">> 签到时间：&sign-time&".trimIndent())
-    private val SIGNUP_INFO_TEMPLATE by conf(
+    private val SIGNUP_INFO_TEMPLATE by rc(
         "==== 签到详情 ====\n" +
                 ">> 上次签到时间：&sign-time&（&sign-status&）\n" +
                 ">> 已经签到了 &sign-number& 次".trimIndent())
 
-    private val SIGNUP_AWARD_RANGE: Pair<Long, Long> by conf(1L to 100L)
-    private var awardCurrencyId: Long = 0L
+    private val SIGNUP_AWARD_RANGE: Pair<Long, Long> by rc(1L to 100L)
+    private val awardCurrencyId: Long by lazy {
+        BankModule.getOrCreateCurrencyByName(signupAwardCurrency, 0).id
+    }
 
-    override val usingTable: List<BaseTable<*>> get() = arrayListOf(
-        SignupLogs
-    )
+    override val tableDependencies: List<BaseTable<*>>
+        get() = listOf(SignupLogs)
 
     init {
-        // 初始化签到奖励的货币的ID
-        val currency = BankModule.getOrCreateCurrencyByName(signupAwardCurrency, 0)
-        awardCurrencyId = currency.id
+        createGroupCommand {
+            name = "签到"
+            alias = listOf("signup")
+            summary = "进行签到，并获取随机数量的指定货币作为签到奖励。"
 
-        addEverywhereCommand("签到", "signup") {
-            val account = BankModule.getAccountByQQ(sender.id)
-            if (account.alreadySignup()) {
-                SIGNUP_ALREADY_TEMPLATE.format(account.getLastSignupTime()!!.formatDateTime())
-            } else {
-                val awardAmount = Random.nextLong(SIGNUP_AWARD_RANGE.first, SIGNUP_AWARD_RANGE.second)
+            {
+                val account = BankModule.getAccountByQQ(it.sender.id)
+                if (account.alreadySignup()) {
+                    SIGNUP_ALREADY_TEMPLATE.asTemplate(
+                        "sign-time" to account.getLastSignupTime()!!.formatDateTime()
+                    )
+                } else {
+                    val awardAmount = Random.nextLong(SIGNUP_AWARD_RANGE.first, SIGNUP_AWARD_RANGE.second)
 
-                val bank = BankModule.getBankByAccountIdAndCurrencyId(account.id, awardCurrencyId)
-                bank.amount += awardAmount
-                bank.flushChanges()
+                    val bank = BankModule.getBankByAccountIdAndCurrencyId(account.id, awardCurrencyId)
+                    bank.amount += awardAmount
+                    bank.flushChanges()
 
-                SignupLogs.insert {
-                    it.account to account.id
-                    it.amount to awardAmount
+                    SignupLogs.insert { target ->
+                        target.account to account.id
+                        target.amount to awardAmount
+                    }
+
+                    SIGNUP_SUCCESS_TEMPLATE.asTemplate(
+                        "sign-time" to account.getLastSignupTime()!!.formatDateTime(),
+                        "amount" to awardAmount.toString(),
+                        "currency-name" to signupAwardCurrency
+                    )
                 }
-
-                SIGNUP_SUCCESS_TEMPLATE.asTemplate(mapOf(
-                    "sign-time" to account.getLastSignupTime()!!.formatDateTime(),
-                    "amount" to awardAmount.toString(),
-                    "currency-name" to signupAwardCurrency
-                ))
             }
         }
 
-        addEverywhereCommand("签到详情", "签到情况", "signup-info", "su-info") {
-            val lastSignupDate = sender.account.getLastSignupTime()
+        createEverywhereCommand {
+            name = "签到详情"
+            alias = listOf("签到情况", "signup-info", "su-info")
+            summary = "获取签到详情。"
 
-//            SIGNUP_INFO_TEMPLATE.format(
-//                lastSignupDate?.formatDateTime()?:"未签到",
-//                if (lastSignupDate?.isToday() == true) "已" else "未",
-//                sender.account.getSignupCount()
-//            )
-            SIGNUP_INFO_TEMPLATE.asTemplate(mapOf(
-                "sign-time" to (lastSignupDate?.formatDateTime()?:"未签到"),
-                "sign-number" to sender.account.getSignupCount().toString(),
-                "sign-status" to if (lastSignupDate?.isToday() == true) "今日已签到" else "今日未签到"
-            ))
+            {
+                val lastSignupDate = it.sender.account.getLastSignupTime()
+                SIGNUP_INFO_TEMPLATE.asTemplate(
+                    "sign-time" to (lastSignupDate?.formatDateTime() ?: "未签到"),
+                    "sign-number" to it.sender.account.getSignupCount().toString(),
+                    "sign-status" to if (lastSignupDate?.isToday() == true) "今日已签到" else "今日未签到"
+                )
+            }
         }
     }
 

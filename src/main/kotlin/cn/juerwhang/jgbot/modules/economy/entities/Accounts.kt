@@ -1,7 +1,7 @@
 package cn.juerwhang.jgbot.modules.economy.entities
 
-import cn.juerwhang.jgbot.modules.basic.entities.BaseEntity
-import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
+import cn.juerwhang.juerobot.store.BaseEntity
+import cn.juerwhang.juerobot.store.BaseTable
 import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.schema.long
 import me.liuwj.ktorm.schema.varchar

@@ -1,98 +1,128 @@
 package cn.juerwhang.jgbot.modules.economy
 
 import cc.moecraft.icq.user.User
-import cn.juerwhang.jgbot.modules.core.CqModule
-import cn.juerwhang.jgbot.modules.basic.entities.BaseTable
-import cn.juerwhang.jgbot.modules.core.conf
 import cn.juerwhang.jgbot.modules.economy.entities.*
 import cn.juerwhang.jgbot.modules.economy.entities.Currency
-import cn.juerwhang.jgbot.utils.asTemplate
+import cn.juerwhang.juerobot.core.CqModule
+import cn.juerwhang.juerobot.core.rc
+import cn.juerwhang.juerobot.store.BaseTable
+import cn.juerwhang.juerobot.utils.asTemplate
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.*
 import java.util.*
 
 
-object BankModule: CqModule(true, "银行模块", "用于提供经济系统相关的操作。") {
-    override val usingTable: List<BaseTable<*>> get() = arrayListOf(
-        Accounts,
-        Currencies,
-        Banks
-    )
+object BankModule: CqModule(
+    "银行模块",
+    "用于提供经济系统相关的操作。",
+    true) {
+    override val tableDependencies: List<BaseTable<*>>
+        get() = listOf(
+            Accounts,
+            Currencies,
+            Banks
+        )
 
-    private val ownerUser by conf(2695996944L)
+    private val ownerUser by rc(2695996944L)
 
-    private val ACCOUNT_ALL_INFO_TEMPLATE by conf("==== 您当前的账户存款详情 ====")
-    private val ACCOUNT_SOME_BANK_INFO_TEMPLATE by conf("==== 您当前查询的货币存款详情 ====")
-    private val CURRENCY_INFO_TEMPLATE by conf("\n>> &curr-name&: &curr-count&")
-    private val DEFAULT_LEVEL by conf(0)
+    private val ACCOUNT_ALL_INFO_TEMPLATE by rc("==== 您当前的账户存款详情 ====")
+    private val ACCOUNT_SOME_BANK_INFO_TEMPLATE by rc("==== 您当前查询的货币存款详情 ====")
+    private val CURRENCY_INFO_TEMPLATE by rc("\n>> &curr-name&: &curr-count&")
+    private val DEFAULT_LEVEL by rc(0)
 
     init {
-        addEverywhereCommand("存款", "账号", "存款信息") {
-            if (args.size == 0) {
-                val resultBuilder = StringBuilder(ACCOUNT_ALL_INFO_TEMPLATE)
-                for (bank in getBanksByQQ(sender.id)) {
-                    resultBuilder.append(CURRENCY_INFO_TEMPLATE.asTemplate(
-                        "curr-name" to bank.currency.name,
-                        "curr-count" to bank.amount.toString()
-                    ))
-                }
-                resultBuilder.toString()
-            } else {
-                val resultBuilder = StringBuilder(ACCOUNT_SOME_BANK_INFO_TEMPLATE)
+        createEverywhereCommand {
+            name = "存款"
+            alias = listOf("账号", "存款信息")
+            summary = "查看当前各个货币已有的存款。"
 
-                resultBuilder.toString()
-            }
-        }
-
-        addPrivateCommand("添加货币", "add-currency", "add-crc") {
-            if (sender.id == ownerUser) {
-                if (args.size == 0) {
-                    "输入参数错误！正确格式：\n添加货币 <货币名称> [默认货币量 = 0]"
-                } else {
-                    val currencyName = args[0]
-                    val defaultValue = if (args.size > 1) args[1].toLong() else 0L
-                    val newId = Currencies.insertAndGenerateKey {
-                        it.name to currencyName
-                        it.defaultAmount to defaultValue
+            {
+                if (it.args.isEmpty()) {
+                    val resultBuilder = StringBuilder(ACCOUNT_ALL_INFO_TEMPLATE)
+                    for (bank in getBanksByQQ(it.sender.id)) {
+                        resultBuilder.append(
+                            CURRENCY_INFO_TEMPLATE.asTemplate(
+                                "curr-name" to bank.currency.name,
+                                "curr-count" to bank.amount.toString()
+                            )
+                        )
                     }
-                    "[ $currencyName ] 添加成功！ID: $newId"
+                    resultBuilder.toString()
+                } else {
+                    val resultBuilder = StringBuilder(ACCOUNT_SOME_BANK_INFO_TEMPLATE)
+
+                    resultBuilder.toString()
                 }
-            } else {
-                ""
             }
         }
 
-        addPrivateCommand("修改货币", "mod-currency", "mod-crc") {
-            if (sender.id == ownerUser) {
-                if (args.size < 2) {
-                    "输入参数错误！正确格式：\n修改货币 <货币名称> <新名称> [默认货币量]"
-                } else {
-                    val oldName = args[0]
-                    val currency = getCurrencyByName(oldName)
-                    if (currency == null) {
-                        "不存在名为 [ $oldName ] 的货币！请尝试使用 添加货币 指令！"
+        createPrivateCommand {
+            name = "添加货币"
+            alias = listOf("add-currency", "add-crc")
+            summary = "向货币列表中添加一个新货币，食用方法：添加货币 <货币名称> [默认货币量 = 0]"
+
+            {
+                if (it.sender.id == ownerUser) {
+                    if (it.args.isEmpty()) {
+                        "输入参数错误！正确格式：\n添加货币 <货币名称> [默认货币量 = 0]"
                     } else {
-                        val newName = args[1]
-                        val defaultValue = if (args.size > 2) args[2].toLong() else currency.defaultAmount
-                        currency.name = newName
-                        currency.defaultAmount = defaultValue
-                        currency.flushChanges()
-
-                        "货币数据修改成功！"
+                        val currencyName = it.args[0]
+                        val defaultValue = if (it.args.size > 1) it.args[1].toLong() else 0L
+                        val newId = Currencies.insertAndGenerateKey { target ->
+                            target.name to currencyName
+                            target.defaultAmount to defaultValue
+                        }
+                        "[ $currencyName ] 添加成功！ID: $newId"
                     }
+                } else {
+                    ""
                 }
-            } else {
-                ""
             }
         }
 
-        addEverywhereCommand("货币列表", "currency-list", "crc-list", "crc-ls") {
-            val resultBuilder = StringBuilder("==== 当前已有货币列表 ====\n")
-            for (currency in Currencies.asSequence()) {
-                resultBuilder.appendln("[ ${currency.name} ( 默认值 : ${currency.defaultAmount} ) ]")
-            }
+        createPrivateCommand {
+            name = "修改货币"
+            alias = listOf("mod-currency", "mod-crc")
+            summary = "修改货币列表中的指定货币的名称，食用方法：修改货币 <货币名称> <新名称> [默认货币量]"
 
-            resultBuilder.toString()
+            {
+                if (it.sender.id == ownerUser) {
+                    if (it.args.size < 2) {
+                        "输入参数错误！正确格式：\n修改货币 <货币名称> <新名称> [默认货币量]"
+                    } else {
+                        val oldName = it.args[0]
+                        val currency = getCurrencyByName(oldName)
+                        if (currency == null) {
+                            "不存在名为 [ $oldName ] 的货币！请尝试使用 添加货币 指令！"
+                        } else {
+                            val newName = it.args[1]
+                            val defaultValue = if (it.args.size > 2) it.args[2].toLong() else currency.defaultAmount
+                            currency.name = newName
+                            currency.defaultAmount = defaultValue
+                            currency.flushChanges()
+
+                            "货币数据修改成功！"
+                        }
+                    }
+                } else {
+                    ""
+                }
+            }
+        }
+
+        createEverywhereCommand {
+            name = "货币列表"
+            alias = listOf("currency-list", "crc-list", "crc-ls")
+            summary = "罗列出当前已有的货币列表。"
+
+            {
+                val resultBuilder = StringBuilder("==== 当前已有货币列表 ====\n")
+                for (currency in Currencies.asSequence()) {
+                    resultBuilder.appendln("[ ${currency.name} ( 默认值 : ${currency.defaultAmount} ) ]")
+                }
+
+                resultBuilder.toString()
+            }
         }
     }
 
